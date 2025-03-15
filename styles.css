@@ -1,0 +1,39 @@
+/*
+
+This CSS file will be included with your plugin, and
+available in the app when your plugin is enabled.
+
+If your plugin does not need CSS, delete this file.
+
+*/
+
+/*
+Scroll Control Plugin Styles
+*/
+
+/* Default scroll control positioning */
+.scroll-control-container {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 1000;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 768px) {
+	.scroll-control-container {
+		bottom: 60px; /* Increased padding on mobile to avoid toolbar overlap */
+	}
+
+	/* Additional adjustment for iOS devices with home indicator */
+	@supports (-webkit-touch-callout: none) {
+		.scroll-control-container {
+			bottom: 80px; /* Even more padding for iOS devices */
+		}
+	}
+}
+
+/* Ensure buttons stay above other UI elements but below modals */
+.scroll-control-button {
+	z-index: 999;
+}

@@ -1,0 +1,13 @@
+{
+	"id": "scroll-control",
+	"name": "Scroll Control",
+	"version": "1.0.0",
+	"minAppVersion": "0.15.0",
+	"description": "Adds configurable scroll control buttons for easy navigation in your notes.",
+	"author": "",
+	"authorUrl": "",
+	"isDesktopOnly": false,
+	"fundingUrl": {
+		"GitHub": ""
+	}
+}
