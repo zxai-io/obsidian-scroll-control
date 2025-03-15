@@ -1,7 +1,7 @@
 # Obsidian Scroll Control
 
 <div align="center">
-    <img src="logo.svg" alt="Obsidian Scroll Control Logo" width="200"/>
+    <img src="assets/logo.svg" alt="Obsidian Scroll Control Logo" width="200"/>
 </div>
 
 A plugin for Obsidian that adds customizable scroll controls to enhance document navigation.
