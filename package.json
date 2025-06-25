@@ -1,6 +1,6 @@
 {
   "name": "obsidian-scroll-control",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "An Obsidian plugin that adds configurable scroll control buttons for easy navigation",
   "main": "main.js",
   "scripts": {
