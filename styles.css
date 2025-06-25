@@ -1,4 +1,57 @@
-/*
-This file is currently unused.
-Floating button styles are injected dynamically by main.ts.
-*/
+/* Visibility control classes */
+.scroll-control-visible {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+.scroll-control-hidden {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Settings preview container */
+.scroll-control-settings-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  margin-bottom: 30px;
+  border: 1px dashed var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  min-height: 150px;
+  justify-content: center;
+  background-color: var(--background-secondary);
+}
+
+/* Settings control visibility */
+.scroll-control-setting-visible {
+  display: flex !important;
+}
+
+.scroll-control-setting-hidden {
+  display: none !important;
+}
+
+/* Preview button wrapper */
+.scroll-control-preview-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Button custom color styling */
+.scroll-control-button-custom {
+  filter: none !important;
+}
+
+.scroll-control-button-default {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-normal) !important;
+  filter: brightness(1.25) !important;
+}
+
+/* Preview button styling */
+.scroll-control-preview-button {
+  opacity: 0.9;
+  cursor: default;
+}

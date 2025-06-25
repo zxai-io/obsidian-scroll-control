@@ -227,8 +227,8 @@ export default class ScrollControlPlugin extends Plugin {
     this.leafButtonContainers.forEach((container, leaf) => {
       if (leaf.view instanceof MarkdownView) {
         const shouldBeVisible = leaf === activeLeaf
-        container.style.opacity = shouldBeVisible ? '1' : '0'
-        container.style.pointerEvents = shouldBeVisible ? 'auto' : 'none'
+        container.toggleClass('scroll-control-visible', shouldBeVisible)
+        container.toggleClass('scroll-control-hidden', !shouldBeVisible)
       }
     })
   }
@@ -284,8 +284,8 @@ export default class ScrollControlPlugin extends Plugin {
     const container = this.leafButtonContainers.get(leaf)
     if (container) {
       const isActive = this.app.workspace.activeLeaf === leaf
-      container.style.opacity = isActive ? '1' : '0'
-      container.style.pointerEvents = isActive ? 'auto' : 'none'
+      container.toggleClass('scroll-control-visible', isActive)
+      container.toggleClass('scroll-control-hidden', !isActive)
     }
   }
 
@@ -344,26 +344,20 @@ export default class ScrollControlPlugin extends Plugin {
         button.addClass('scroll-control-button-animated')
       }
 
-      let finalIconSvg = iconSvg
       let iconColor = 'currentColor'
 
       if (this.settings.useCustomColor) {
         button.style.backgroundColor = this.settings.buttonColor
         iconColor = this.getContrastColor(this.settings.buttonColor)
         button.style.color = iconColor
-        button.style.filter = 'none'
-        finalIconSvg = iconSvg.replace(
-          'stroke="currentColor"',
-          `stroke="${iconColor}"`,
-        )
+        button.addClass('scroll-control-button-custom')
       } else {
-        // Use CSS variables for default colors
-        button.style.backgroundColor = '' // Let CSS handle default background
-        button.style.color = '' // Let CSS handle default icon color
-        button.style.filter = '' // Use default filter from CSS
+        button.addClass('scroll-control-button-default')
       }
 
-      button.innerHTML = finalIconSvg
+      // Create SVG element using DOM API instead of innerHTML
+      const svgElement = this.createSVGFromString(iconSvg, iconColor)
+      button.appendChild(svgElement)
       button.setAttribute('aria-label', tooltip)
       // Positioning (bottom, right) is now handled by the container's CSS
 
@@ -531,6 +525,28 @@ export default class ScrollControlPlugin extends Plugin {
   }
 
   /**
+   * Creates an SVG element from an SVG string using DOM API.
+   * @param svgString - The SVG markup as a string.
+   * @param strokeColor - The stroke color to apply to the SVG.
+   * @returns The created SVG element.
+   */
+  public createSVGFromString(
+    svgString: string,
+    strokeColor: string,
+  ): SVGElement {
+    const parser = new DOMParser()
+    const svgDoc = parser.parseFromString(svgString, 'image/svg+xml')
+    const svgElement = svgDoc.documentElement as unknown as SVGElement
+
+    // Set stroke color if not using currentColor
+    if (strokeColor !== 'currentColor') {
+      svgElement.setAttribute('stroke', strokeColor)
+    }
+
+    return svgElement
+  }
+
+  /**
    * Calculates contrast color (black or white) for a given hex color.
    * @param hexColor - The background color in hex format (e.g., "#RRGGBB").
    * @returns "#000000" (black) or "#FFFFFF" (white).
@@ -592,18 +608,8 @@ class ScrollControlSettingTab extends PluginSettingTab {
     this.previewContainer = containerEl.createDiv(
       'scroll-control-settings-preview',
     )
-    // Basic styling for the preview container
-    this.previewContainer.style.display = 'flex'
-    this.previewContainer.style.flexDirection = 'column'
-    this.previewContainer.style.alignItems = 'center'
-    this.previewContainer.style.padding = '20px'
-    this.previewContainer.style.marginBottom = '30px' // Increased spacing
-    this.previewContainer.style.border =
-      '1px dashed var(--background-modifier-border)'
-    this.previewContainer.style.borderRadius = 'var(--radius-m)'
-    this.previewContainer.style.minHeight = '150px'
-    this.previewContainer.style.justifyContent = 'center'
-    this.previewContainer.style.backgroundColor = 'var(--background-secondary)'
+    // Add CSS class for preview container styling
+    this.previewContainer.addClass('scroll-control-settings-preview')
 
     // --- General Settings ---
     containerEl.createEl('h3', { text: 'General Appearance' })
@@ -636,7 +642,14 @@ class ScrollControlSettingTab extends PluginSettingTab {
           .setValue(this.plugin.settings.useCustomColor)
           .onChange(async (value) => {
             this.plugin.settings.useCustomColor = value
-            colorSetting.settingEl.style.display = value ? 'flex' : 'none'
+            colorSetting.settingEl.toggleClass(
+              'scroll-control-setting-visible',
+              value,
+            )
+            colorSetting.settingEl.toggleClass(
+              'scroll-control-setting-hidden',
+              !value,
+            )
             this.updatePreviewButtons()
             await this.plugin.saveSettings()
           }),
@@ -658,9 +671,14 @@ class ScrollControlSettingTab extends PluginSettingTab {
           }),
       )
     // Hide/show based on the toggle state without redrawing the whole tab
-    colorSetting.settingEl.style.display = this.plugin.settings.useCustomColor
-      ? 'flex'
-      : 'none'
+    colorSetting.settingEl.toggleClass(
+      'scroll-control-setting-visible',
+      this.plugin.settings.useCustomColor,
+    )
+    colorSetting.settingEl.toggleClass(
+      'scroll-control-setting-hidden',
+      !this.plugin.settings.useCustomColor,
+    )
 
     // Animations
     new Setting(containerEl)
@@ -672,9 +690,14 @@ class ScrollControlSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.useAnimations = value
             // Directly toggle visibility of the speed setting
-            animationSpeedSetting.settingEl.style.display = value
-              ? 'flex'
-              : 'none'
+            animationSpeedSetting.settingEl.toggleClass(
+              'scroll-control-setting-visible',
+              value,
+            )
+            animationSpeedSetting.settingEl.toggleClass(
+              'scroll-control-setting-hidden',
+              !value,
+            )
             await this.plugin.saveSettings()
           }),
       )
@@ -695,10 +718,14 @@ class ScrollControlSettingTab extends PluginSettingTab {
       )
 
     // Hide/show based on the toggle state without redrawing the whole tab
-    animationSpeedSetting.settingEl.style.display = this.plugin.settings
-      .useAnimations
-      ? 'flex'
-      : 'none'
+    animationSpeedSetting.settingEl.toggleClass(
+      'scroll-control-setting-visible',
+      this.plugin.settings.useAnimations,
+    )
+    animationSpeedSetting.settingEl.toggleClass(
+      'scroll-control-setting-hidden',
+      !this.plugin.settings.useAnimations,
+    )
 
     // Button Visibility Settings
     containerEl.createEl('h3', { text: 'Button Visibility' })
@@ -877,18 +904,15 @@ class ScrollControlSettingTab extends PluginSettingTab {
     buttons.sort((a, b) => a.order - b.order)
 
     const previewButtonWrapper = this.previewContainer.createDiv()
-    previewButtonWrapper.style.display = 'flex'
-    previewButtonWrapper.style.flexDirection = 'column'
+    previewButtonWrapper.addClass('scroll-control-preview-wrapper')
     previewButtonWrapper.style.gap = `${settings.buttonSpacing}px`
-    previewButtonWrapper.style.alignItems = 'center'
 
     buttons.forEach((btnData) => {
       const button = previewButtonWrapper.createDiv()
       button.addClass('scroll-control-button')
       button.addClass(`scroll-control-button-${settings.buttonSize}`)
-      button.style.opacity = '0.9'
+      button.addClass('scroll-control-preview-button')
 
-      let finalIconSvg = btnData.icon
       let iconColor: string
 
       if (settings.useCustomColor) {
@@ -903,32 +927,27 @@ class ScrollControlSettingTab extends PluginSettingTab {
           iconColor = finalIconColor
           button.style.backgroundColor = buttonBackgroundColor
           button.style.color = iconColor
-          button.style.filter = 'none'
-          // Update stroke color in SVG string
-          finalIconSvg = btnData.icon.replace(
-            'stroke="currentColor"',
-            `stroke="${iconColor}"`,
-          )
+          button.addClass('scroll-control-button-custom')
         } catch {
           // Fallback if validation fails here (should be caught above)
-          button.style.backgroundColor = 'var(--background-secondary)'
-          button.style.color = 'var(--text-normal)'
-          button.style.filter = 'brightness(1.25)'
+          button.addClass('scroll-control-button-default')
           iconColor = 'var(--text-normal)'
-          finalIconSvg = btnData.icon
         }
       } else {
         // Use theme defaults determined above for button background and icon color
         button.style.backgroundColor = buttonBackgroundColor
         button.style.color = finalIconColor
-        button.style.filter = 'brightness(1.25)'
+        button.addClass('scroll-control-button-default')
         iconColor = finalIconColor
-        finalIconSvg = btnData.icon
       }
 
-      button.innerHTML = finalIconSvg
+      // Create SVG element using DOM API instead of innerHTML
+      const svgElement = this.plugin.createSVGFromString(
+        btnData.icon,
+        iconColor,
+      )
+      button.appendChild(svgElement)
       button.setAttribute('aria-label', btnData.tooltip)
-      button.style.cursor = 'default'
     })
   }
 }
