@@ -347,9 +347,12 @@ export default class ScrollControlPlugin extends Plugin {
       let iconColor = 'currentColor'
 
       if (this.settings.useCustomColor) {
-        button.style.backgroundColor = this.settings.buttonColor
+        button.style.setProperty(
+          '--scroll-control-custom-bg',
+          this.settings.buttonColor,
+        )
         iconColor = this.getContrastColor(this.settings.buttonColor)
-        button.style.color = iconColor
+        button.style.setProperty('--scroll-control-custom-color', iconColor)
         button.addClass('scroll-control-button-custom')
       } else {
         button.addClass('scroll-control-button-default')
@@ -518,6 +521,38 @@ export default class ScrollControlPlugin extends Plugin {
 
 			.scroll-control-button svg {
 				stroke-width: 2;
+			}
+
+			/* Custom color support using CSS custom properties */
+			.scroll-control-button-custom {
+				background-color: var(--scroll-control-custom-bg, var(--background-secondary)) !important;
+				color: var(--scroll-control-custom-color, var(--text-normal)) !important;
+			}
+
+			/* Settings preview styles */
+			.scroll-control-settings-preview {
+				background-color: var(--scroll-control-preview-bg, var(--background-primary));
+				color: var(--scroll-control-preview-color, var(--text-normal));
+				padding: 20px;
+				border-radius: 8px;
+				margin: 10px 0;
+				min-height: 100px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				position: relative;
+			}
+
+			.scroll-control-preview-wrapper {
+				display: flex;
+				flex-direction: column;
+				gap: var(--scroll-control-preview-gap, var(--scroll-control-button-spacing));
+				align-items: flex-end;
+			}
+
+			.scroll-control-preview-button {
+				background-color: var(--scroll-control-preview-btn-bg, var(--background-secondary)) !important;
+				color: var(--scroll-control-preview-btn-color, var(--text-normal)) !important;
 			}
 		`
 
@@ -844,10 +879,10 @@ class ScrollControlSettingTab extends PluginSettingTab {
     if (settings.useCustomColor) {
       try {
         // Validate custom color first
-        const dummyDiv = document.createElement('div')
-        // Test setting background color directly for validation
-        dummyDiv.style.backgroundColor = settings.buttonColor
-        if (!dummyDiv.style.backgroundColor) {
+        if (
+          !settings.buttonColor ||
+          !/^#[0-9A-Fa-f]{3,6}$/.test(settings.buttonColor)
+        ) {
           throw new Error('Invalid background color format')
         }
 
@@ -877,8 +912,14 @@ class ScrollControlSettingTab extends PluginSettingTab {
       previewTextColor = 'var(--background-secondary)' // Preview text contrasts with preview BG
     }
 
-    this.previewContainer.style.backgroundColor = previewBackgroundColor
-    this.previewContainer.style.color = previewTextColor
+    this.previewContainer.style.setProperty(
+      '--scroll-control-preview-bg',
+      previewBackgroundColor,
+    )
+    this.previewContainer.style.setProperty(
+      '--scroll-control-preview-color',
+      previewTextColor,
+    )
 
     const buttons = []
     if (settings.showScrollTopButton) {
@@ -905,7 +946,10 @@ class ScrollControlSettingTab extends PluginSettingTab {
 
     const previewButtonWrapper = this.previewContainer.createDiv()
     previewButtonWrapper.addClass('scroll-control-preview-wrapper')
-    previewButtonWrapper.style.gap = `${settings.buttonSpacing}px`
+    previewButtonWrapper.style.setProperty(
+      '--scroll-control-preview-gap',
+      `${settings.buttonSpacing}px`,
+    )
 
     buttons.forEach((btnData) => {
       const button = previewButtonWrapper.createDiv()
@@ -917,16 +961,18 @@ class ScrollControlSettingTab extends PluginSettingTab {
 
       if (settings.useCustomColor) {
         try {
-          // Validate again for safety, using the determined button BG color
-          const dummyDiv = document.createElement('div')
-          dummyDiv.style.backgroundColor = buttonBackgroundColor
-          if (!dummyDiv.style.backgroundColor)
-            throw new Error('Invalid color format for button')
+          // Validation was already done above
 
           // Icon color contrasts with the button background color
           iconColor = finalIconColor
-          button.style.backgroundColor = buttonBackgroundColor
-          button.style.color = iconColor
+          button.style.setProperty(
+            '--scroll-control-preview-btn-bg',
+            buttonBackgroundColor,
+          )
+          button.style.setProperty(
+            '--scroll-control-preview-btn-color',
+            iconColor,
+          )
           button.addClass('scroll-control-button-custom')
         } catch {
           // Fallback if validation fails here (should be caught above)
@@ -935,8 +981,14 @@ class ScrollControlSettingTab extends PluginSettingTab {
         }
       } else {
         // Use theme defaults determined above for button background and icon color
-        button.style.backgroundColor = buttonBackgroundColor
-        button.style.color = finalIconColor
+        button.style.setProperty(
+          '--scroll-control-preview-btn-bg',
+          buttonBackgroundColor,
+        )
+        button.style.setProperty(
+          '--scroll-control-preview-btn-color',
+          finalIconColor,
+        )
         button.addClass('scroll-control-button-default')
         iconColor = finalIconColor
       }
