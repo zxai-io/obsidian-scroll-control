@@ -6,6 +6,10 @@
 .cursor
 .cursorignore
 
+# Claude
+CLAUDE.md
+.claude
+
 # Intellij
 *.iml
 .idea
